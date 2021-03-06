@@ -43,6 +43,49 @@ void EnableInterrupts(void);
 #define PE210                   (*((volatile uint32_t *)0x4002401C)) // bits 2-0
 #define PF321                   (*((volatile uint32_t *)0x40025038)) // bits 3-1
 
+struct State{
+	uint32_t outC; // output for cars 
+	uint32_t outP; // output for peds 
+	uint32_t wait; 
+	uint8_t next[8];
+};
+
+typedef const struct State State_t;
+
+#define Start 0   
+#define West_G 1 		
+#define West_Y 2
+#define West_R 3 
+#define South_G 4
+#define South_Y 5
+#define Walk_W 6
+#define Walk_R1 7
+#define Walk_O1 8
+#define Walk_R2 9
+#define Walk_O2 10
+#define Walk_R3 11
+#define Walk_O3 12
+#define Walk_RF 13   
+
+
+State_t FSM[4] = {
+// outC  outP delay   000     001     010     011      100     101    110     111 
+	{0x24, 0x02, 100, {Start, West_G, South_G, West_G, Walk_W, Walk_W, Walk_W, Walk_W}} // Start 
+	{0x0A, 0x02, 100, {West_Y, West_G, West_Y, West_Y, West_Y, West_Y, West_Y, West_Y}} // West_G 
+	{0x14, 0x02, 100, {West_R, West_R, West_R, West_R, West_R, West_R, West_R, West_R}} // West_Y
+	{0x24, 0x02, 100, {Start, West_G, South_G, South_G, Start, Start, South_G, South_G}} // West_R
+	{0x81, 0x02, 100, {South_Y, South_Y, South_G, South_Y, South_Y, South_Y, South_Y, South_Y}} // South_G
+	{0x82, 0x02, 100, {Start, Start, Start, Start, Start, Start, Start, Start}} // South_Y 
+	{0x84, 0x0E, 100, {Walk_R1, Walk_R1, Walk_R1, Walk_R1, Walk_W, Walk_R1, Walk_R1, Walk_R1}} // Walk_W
+	{0x24, 0x02, 100, {Walk_O1, Walk_O1, Walk_O1, Walk_O1, Walk_O1, Walk_O1, Walk_O1, Walk_O1}} // Walk_R1
+	{0x24, 0x00, 100, {Walk_R2, Walk_R2, Walk_R2, Walk_R2, Walk_R2, Walk_R2, Walk_R2, Walk_R2}} // Walk_O1
+	{0x24, 0x02, 100, {Walk_O2, Walk_O2, Walk_O2, Walk_O2, Walk_O2, Walk_O2, Walk_O2, Walk_O2}} // Walk_R2
+	{0x24, 0x00, 100, {Walk_R3, Walk_R3, Walk_R3, Walk_R3, Walk_R3, Walk_R3, Walk_R3, Walk_R3}} // Walk_O2
+	{0x24, 0x02, 100, {Walk_O3, Walk_O3, Walk_O3, Walk_O3, Walk_O3, Walk_O3, Walk_O3, Walk_O3}} // Walk_R3
+	{0x24, 0x00, 100, {Walk_RF, Walk_RF, Walk_RF, Walk_RF, Walk_RF, Walk_RF, Walk_RF, Walk_RF}} // Walk_O3
+	{0x24, 0x02, 100, {Start, West_G, South_G, West_G, Walk_W, West_G, South_G, West_G}} // Walk_RF
+	
+
 
 void LogicAnalyzerTask(void){
   UART0_DR_R = 0x80|GPIO_PORTB_DATA_R;
@@ -83,6 +126,8 @@ int main(void){volatile uint32_t delay;
 // **************************************************
  
   EnableInterrupts();
+	
+	
     
   while(1){
 // output
