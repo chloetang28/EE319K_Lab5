@@ -47,7 +47,7 @@ struct State{
 	uint32_t outC; // output for cars 
 	uint32_t outP; // output for peds 
 	uint32_t wait; 
-	uint8_t next[8];
+	uint32_t next[8];
 };
 
 typedef const struct State State_t;
@@ -65,25 +65,26 @@ typedef const struct State State_t;
 #define Walk_O2 10
 #define Walk_R3 11
 #define Walk_O3 12
-#define Walk_RF 13   
+#define Walk_RF 13
 
 
-State_t FSM[4] = {
+State_t FSM[14] = {
 // outC  outP delay   000     001     010     011      100     101    110     111 
-	{0x24, 0x02, 100, {Start, West_G, South_G, West_G, Walk_W, Walk_W, Walk_W, Walk_W}} // Start 
-	{0x0A, 0x02, 100, {West_Y, West_G, West_Y, West_Y, West_Y, West_Y, West_Y, West_Y}} // West_G 
-	{0x14, 0x02, 100, {West_R, West_R, West_R, West_R, West_R, West_R, West_R, West_R}} // West_Y
-	{0x24, 0x02, 100, {Start, West_G, South_G, South_G, Start, Start, South_G, South_G}} // West_R
-	{0x81, 0x02, 100, {South_Y, South_Y, South_G, South_Y, South_Y, South_Y, South_Y, South_Y}} // South_G
-	{0x82, 0x02, 100, {Start, Start, Start, Start, Start, Start, Start, Start}} // South_Y 
-	{0x84, 0x0E, 100, {Walk_R1, Walk_R1, Walk_R1, Walk_R1, Walk_W, Walk_R1, Walk_R1, Walk_R1}} // Walk_W
-	{0x24, 0x02, 100, {Walk_O1, Walk_O1, Walk_O1, Walk_O1, Walk_O1, Walk_O1, Walk_O1, Walk_O1}} // Walk_R1
-	{0x24, 0x00, 100, {Walk_R2, Walk_R2, Walk_R2, Walk_R2, Walk_R2, Walk_R2, Walk_R2, Walk_R2}} // Walk_O1
-	{0x24, 0x02, 100, {Walk_O2, Walk_O2, Walk_O2, Walk_O2, Walk_O2, Walk_O2, Walk_O2, Walk_O2}} // Walk_R2
-	{0x24, 0x00, 100, {Walk_R3, Walk_R3, Walk_R3, Walk_R3, Walk_R3, Walk_R3, Walk_R3, Walk_R3}} // Walk_O2
-	{0x24, 0x02, 100, {Walk_O3, Walk_O3, Walk_O3, Walk_O3, Walk_O3, Walk_O3, Walk_O3, Walk_O3}} // Walk_R3
-	{0x24, 0x00, 100, {Walk_RF, Walk_RF, Walk_RF, Walk_RF, Walk_RF, Walk_RF, Walk_RF, Walk_RF}} // Walk_O3
-	{0x24, 0x02, 100, {Start, West_G, South_G, West_G, Walk_W, West_G, South_G, West_G}} // Walk_RF
+	{0x24, 0x02, 100, {Start, West_G, South_G, West_G, Walk_W, Walk_W, Walk_W, Walk_W}}, // Start 
+	{0x0C, 0x02, 100, {West_Y, West_G, West_Y, West_Y, West_Y, West_Y, West_Y, West_Y}}, // West_G 
+	{0x14, 0x02, 100, {West_R, West_R, West_R, West_R, West_R, West_R, West_R, West_R}}, // West_Y
+	{0x24, 0x02, 100, {Start, West_G, South_G, South_G, Start, Start, South_G, South_G}}, // West_R
+	{0x21, 0x02, 100, {South_Y, South_Y, South_G, South_Y, South_Y, South_Y, South_Y, South_Y}}, // South_G
+	{0x22, 0x02, 100, {Start, Start, Start, Start, Start, Start, Start, Start}}, // South_Y 
+	{0x24, 0x0E, 100, {Walk_R1, Walk_R1, Walk_R1, Walk_R1, Walk_W, Walk_R1, Walk_R1, Walk_R1}}, // Walk_W
+	{0x24, 0x02, 100, {Walk_O1, Walk_O1, Walk_O1, Walk_O1, Walk_O1, Walk_O1, Walk_O1, Walk_O1}}, // Walk_R1
+	{0x24, 0x00, 100, {Walk_R2, Walk_R2, Walk_R2, Walk_R2, Walk_R2, Walk_R2, Walk_R2, Walk_R2}}, // Walk_O1
+	{0x24, 0x02, 100, {Walk_O2, Walk_O2, Walk_O2, Walk_O2, Walk_O2, Walk_O2, Walk_O2, Walk_O2}}, // Walk_R2
+	{0x24, 0x00, 100, {Walk_R3, Walk_R3, Walk_R3, Walk_R3, Walk_R3, Walk_R3, Walk_R3, Walk_R3}}, // Walk_O2
+	{0x24, 0x02, 100, {Walk_O3, Walk_O3, Walk_O3, Walk_O3, Walk_O3, Walk_O3, Walk_O3, Walk_O3}}, // Walk_R3
+	{0x24, 0x00, 100, {Walk_RF, Walk_RF, Walk_RF, Walk_RF, Walk_RF, Walk_RF, Walk_RF, Walk_RF}}, // Walk_O3
+	{0x24, 0x02, 100, {Start, West_G, South_G, West_G, Walk_W, West_G, South_G, West_G}}	// Walk_RF
+};
 	
 
 
@@ -98,6 +99,15 @@ int main(void){volatile uint32_t delay;
   PLL_Init(); // PLL on at 80 MHz
   SYSCTL_RCGC2_R |= 0x32; // Ports B,E,F
   delay = SYSCTL_RCGC2_R;
+	
+	uint32_t S;
+	uint32_t Input;
+	GPIO_PORTB_DIR_R |= 0x003F; //output
+	GPIO_PORTE_DIR_R &= 0xF8; //input
+	GPIO_PORTF_DIR_R |= 0x0E; //output
+	GPIO_PORTB_DEN_R |= 0x003F;
+	GPIO_PORTE_DEN_R |= 0x07;
+	GPIO_PORTF_DEN_R |= 0x0E;
 
 // run this version on the board
 
@@ -128,12 +138,13 @@ int main(void){volatile uint32_t delay;
   EnableInterrupts();
 	
 	
-    
+  S =  Start;
   while(1){
-// output
-// wait
-// input
-// next	
+		GPIO_PORTB_DATA_R = FSM[S].outC; // output
+		GPIO_PORTF_DATA_R = FSM[S].outP;
+		SysTick_Wait10ms(FSM[S].wait); // wait
+		Input = GPIO_PORTE_DATA_R; // input
+		S = FSM[S].next[Input]; // next	
   }
 }
 
