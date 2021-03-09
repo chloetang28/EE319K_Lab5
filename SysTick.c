@@ -24,7 +24,7 @@
 // Initialize SysTick with busy wait running at bus clock.
 void SysTick_Init(void){
   // write this
-  NVIC_ST_CTRL_R = 0;    // disable SysTick
+	NVIC_ST_CTRL_R = 0;    // disable SysTick
 	NVIC_ST_RELOAD_R = 0x00FFFFFF;   // max reload value
 	NVIC_ST_CURRENT_R = 0; // write to CURRENT
 	NVIC_ST_CTRL_R = 0x00000005; // use bus clock 
@@ -42,7 +42,7 @@ void SysTick_Wait(uint32_t delay){
 void SysTick_Wait10ms(uint32_t delay){
   // write this
 	for(uint32_t i=0; i<delay; i++){
-		SysTick_Wait(800000); 
+		SysTick_Wait(500000); 
 	}
 }
 
