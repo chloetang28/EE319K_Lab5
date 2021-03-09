@@ -42,7 +42,7 @@ void SysTick_Wait(uint32_t delay){
 void SysTick_Wait10ms(uint32_t delay){
   // write this
 	for(uint32_t i=0; i<delay; i++){
-		SysTick_Wait(500000); 
+		SysTick_Wait(800000); 
 	}
 }
 
